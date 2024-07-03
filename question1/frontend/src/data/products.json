@@ -1,0 +1,24 @@
+[
+  {
+    "id": 1,
+    "name": "Product 1",
+    "company": "Company A",
+    "category": "Category X",
+    "price": 100,
+    "rating": 4.5,
+    "discount": 10,
+    "availability": "In Stock",
+    "image": "https://via.placeholder.com/150"
+  },
+  {
+    "id": 2,
+    "name": "Product 2",
+    "company": "Company B",
+    "category": "Category Y",
+    "price": 150,
+    "rating": 4.0,
+    "discount": 15,
+    "availability": "Out of Stock",
+    "image": "https://via.placeholder.com/150"
+  }
+]
