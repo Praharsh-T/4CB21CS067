@@ -1,99 +1,101 @@
-// server.js
-
 const express = require("express");
 const cors = require("cors");
-const axios = require("axios");
-const { v4: uuidv4 } = require("uuid");
-
+const { default: axios } = require("axios");
+const {
+  COMPANY_CATAGROY_PROUCT_URL,
+  TOKEN,
+  COMPANIES,
+  CATEGORIES,
+} = require("./contants");
+const { getProduct } = require("./retrieve");
+const fs = require("fs");
 const app = express();
+app.use(cors());
 const PORT = 5000;
 
-app.use(cors());
+let ALL_PRODUCTS = {};
+// try {
+//   axios
+//     .get(COMPANY_CATAGROY_PROUCT_URL, {
+//       headers: {
+//         Authorization: `Bearer ${TOKEN}`,
+//       },
+//     })
+//     .then((data) => console.log(data))
+//     .catch((e) => {
+//       console.log(e);
+//     });
+// } catch (e) {
+//   console.log(e);
+// }
 
-app.use(express.json());
+let k = 0;
+async function getAllData() {
+  for (let i = 0; i < COMPANIES.length; i++) {
+    for (let j = 0; j < CATEGORIES.length; j++) {
+      const response = await getProduct(COMPANIES[i], CATEGORIES[j]);
+      if (response && response.length) {
+        for (let l = 0; l < response.length; l++) {
+          response[i].productid = k++;
+        }
+        if (!ALL_PRODUCTS[COMPANIES[i]]) {
+          ALL_PRODUCTS[COMPANIES[i]] = {};
+        }
+        ALL_PRODUCTS[COMPANIES[i]][CATEGORIES[j]] = response;
+      }
+    }
+  }
+}
 
-const ecommerceAPIs = ["https://company1-api.com", "https://company2-api.com"];
+// (async () => {
+//   getAllData().then(() => {
+//     fs.writeFileSync("./product.json", JSON.stringify(ALL_PRODUCTS));
+//     fs.readFileSync("./product.json", (err, data) => {
+//       ALL_PRODUCTS = data;
+//     });
+//   });
+// })();
+
+fs.readFile("./product.json", "utf8", (err, data) => {
+  if (data) {
+    ALL_PRODUCTS = JSON.parse(data);
+    return;
+  }
+});
 
 app.get("/categories/:categoryname/products", async (req, res) => {
-  try {
-    const { categoryname } = req.params;
-    const { n, page = 1, sort_by, order = "asc" } = req.query;
-
-    const limit = parseInt(n);
-    if (!limit || limit <= 0) {
-      return res
-        .status(400)
-        .json({ error: "'n' query parameter must be a positive number" });
+  const categoryname = req.params.categoryname;
+  let n = req.query.n;
+  let constraint = req.query.constraint;
+  if (!n) n = 10;
+  let curCat = [];
+  for (let i = 0; i < COMPANIES.length; i++) {
+    if (
+      ALL_PRODUCTS[COMPANIES[i]] &&
+      ALL_PRODUCTS[COMPANIES[i]][categoryname]
+    ) {
+      curCat = [...curCat, ...ALL_PRODUCTS[COMPANIES[i]][categoryname]];
     }
-
-    let allProducts = [];
-    for (const api of ecommerceAPIs) {
-      const response = await axios.get(
-        `${api}/products?category=${categoryname}`
-      );
-      const products = response.data.products.map((product) => ({
-        ...product,
-        company: api,
-      }));
-      allProducts = [...allProducts, ...products];
-    }
-
-    if (sort_by) {
-      allProducts.sort((a, b) => {
-        if (order === "asc") {
-          return a[sort_by] > b[sort_by] ? 1 : -1;
-        } else {
-          return a[sort_by] < b[sort_by] ? 1 : -1;
-        }
-      });
-    }
-
-    const startIndex = (page - 1) * limit;
-    const endIndex = startIndex + limit;
-    const paginatedProducts = allProducts.slice(startIndex, endIndex);
-
-    const productsWithId = paginatedProducts.map((product) => ({
-      ...product,
-      custom_id: uuidv4(),
-    }));
-
-    res.json(productsWithId);
-  } catch (error) {
-    console.error("Error fetching products:", error);
-    res.status(500).json({ error: "Failed to fetch products" });
   }
+  curCat.sort((a, b) => {
+    return b[constraint] - a[constraint];
+  });
+  newArr = [];
+  for (let j = 0; j < n && j < curCat.length; j++) {
+    newArr.push(curCat[j]);
+  }
+  res.json({ newArr });
 });
 
 app.get("/categories/:categoryname/products/:productid", async (req, res) => {
-  try {
-    const { categoryname, productid } = req.params;
-
-    let product = null;
-    for (const api of ecommerceAPIs) {
-      const response = await axios.get(`${api}/products/${productid}`);
-      if (
-        response.data.product &&
-        response.data.product.category === categoryname
-      ) {
-        product = {
-          ...response.data.product,
-          company: api,
-        };
-        break;
-      }
-    }
-
-    if (product) {
-      res.json(product);
-    } else {
-      res.status(404).json({ error: "Product not found" });
-    }
-  } catch (error) {
-    console.error("Error fetching product details:", error);
-    res.status(500).json({ error: "Failed to fetch product details" });
-  }
+  const { categoryname, productid } = req.params;
+  const n = req.query.n;
+  console.log(n);
+  console.log(categoryname);
+  console.log(productid);
+  res.json("hii");
 });
 
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+  console.log("App running on port " + PORT);
 });
