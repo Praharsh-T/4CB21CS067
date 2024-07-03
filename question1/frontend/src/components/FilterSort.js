@@ -34,42 +34,47 @@ const FilterSort = ({ products, onFilterSort }) => {
           placeholder='Category'
           value={category}
           onChange={(e) => setCategory(e.target.value)}
-          className='border p-2'
+          className='border rounded-lg p-2 focus:outline-none focus:border-blue-500 flex-1'
         />
+
         <input
           type='text'
           placeholder='Company'
           value={company}
           onChange={(e) => setCompany(e.target.value)}
-          className='border p-2'
+          className='border rounded-lg p-2 focus:outline-none focus:border-blue-500 flex-1'
         />
+
         <input
           type='number'
           placeholder='Rating'
           value={rating}
           onChange={(e) => setRating(e.target.value)}
-          className='border p-2'
+          className='border rounded-lg p-2 focus:outline-none focus:border-blue-500 w-20'
         />
+
         <input
           type='text'
           placeholder='Price Range'
           value={priceRange}
           onChange={(e) => setPriceRange(e.target.value)}
-          className='border p-2'
+          className='border rounded-lg p-2 focus:outline-none focus:border-blue-500 flex-1'
         />
+
         <select
           value={sortOption}
           onChange={(e) => setSortOption(e.target.value)}
-          className='border p-2'>
+          className='border rounded-lg p-2 focus:outline-none focus:border-blue-500'>
           <option value=''>Sort By</option>
           <option value='price'>Price</option>
           <option value='rating'>Rating</option>
           <option value='discount'>Discount</option>
         </select>
       </div>
+
       <button
         onClick={handleFilterSort}
-        className='bg-blue-500 text-white p-2 mt-2'>
+        className='bg-blue-500 text-white p-2 mt-2 rounded-lg hover:bg-blue-600 focus:outline-none focus:bg-blue-600'>
         Apply Filters
       </button>
     </div>
